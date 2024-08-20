@@ -14,12 +14,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set safe directory
+        run: git config --global --add safe.directory /github/workspace
+
       - name: Calculate next version
         id: calculate_version
         uses: anothrNick/github-tag-action@1.11.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DRY_RUN: true
+          DRY_RUN: false  # Disable DRY_RUN to ensure the version is calculated and applied
+
+      - name: Debug version
+        run: echo "Calculated version: ${{ steps.calculate_version.outputs.new_tag }}"
 
       - name: Update application.properties
         run: |
@@ -27,18 +33,15 @@ jobs:
           PROPERTIES_FILE="application.properties"
           DATE=$(TZ=UTC date "+%a %b %d %T %Z %Y")
           
-          # Read current values
           GRAILS_VERSION=$(grep "^app.grails.version=" "$PROPERTIES_FILE" | cut -d'=' -f2)
           APP_NAME=$(grep "^app.name=" "$PROPERTIES_FILE" | cut -d'=' -f2)
           
-          # Create new content
           NEW_CONTENT="#Grails Metadata file
           #$DATE
           app.grails.version=$GRAILS_VERSION
           app.name=$APP_NAME
           app.version=${VERSION#v}"
           
-          # Update the file
           echo "$NEW_CONTENT" > "$PROPERTIES_FILE"
 
       - name: Commit updated application.properties
@@ -59,5 +62,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set safe directory
+        run: git config --global --add safe.directory /github/workspace
+
       - name: Github Tag Bump
         uses: anothrNick/github-tag-action@1.11.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

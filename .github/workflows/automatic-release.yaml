@@ -25,7 +25,7 @@ jobs:
           DRY_RUN: false  # Disable DRY_RUN to ensure the version is calculated and applied
 
       - name: Debug version
-        run: echo "Calculated version: ${{ steps.calculate_version.outputs.new_tag }}"
+        run: 'echo "Calculated version: ${{ steps.calculate_version.outputs.new_tag }}"'
 
       - name: Update application.properties
         run: |
